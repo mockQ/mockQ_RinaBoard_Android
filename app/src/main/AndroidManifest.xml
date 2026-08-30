@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 中文注释：本清单声明 APP 的联网权限、应用主题以及竖屏主页和横屏彩色绘画页。 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 中文注释：允许 APP 通过 Wi-Fi/HTTP 向 ESP32-S3 发送控制命令。 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 中文注释：允许 APP 读取当前网络连接状态。 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- 中文注释：应用主体配置。 -->
+    <application
+        android:allowBackup="true"
+        android:label="Rina Board"
+        android:icon="@drawable/ic_launcher_foreground"
+        android:roundIcon="@drawable/ic_launcher_foreground"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:theme="@style/Theme.RinaBoard">
+
+        <!-- 中文注释：彩色绘画页面强制横屏，方便显示 308 颗实际位置灯珠和 RGB 控件。 -->
+        <activity
+            android:name=".ui.DrawActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.RinaBoard" />
+
+        <!-- 中文注释：主控制页面保持竖屏，并作为 APP 启动入口。 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.RinaBoard">
+            <!-- 中文注释：下面的 Intent Filter 将 MainActivity 注册为桌面启动入口。 -->
+            <intent-filter>
+                <!-- 中文注释：声明主启动动作。 -->
+                <action android:name="android.intent.action.MAIN" />
+                <!-- 中文注释：声明桌面 Launcher 分类。 -->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
