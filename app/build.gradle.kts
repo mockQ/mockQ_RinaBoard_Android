@@ -24,9 +24,9 @@ android {
         // 中文注释：目标 Android SDK 版本。
         targetSdk = 36
         // 中文注释：应用内部版本号。
-        versionCode = 2
+        versionCode = 3
         // 中文注释：用户可见版本名，本版增加彩色逐灯绘画功能。
-        versionName = "1.1.0-color"
+        versionName = "1.2.0-ble"
     }
 
     // 中文注释：启用 Jetpack Compose 和 BuildConfig 生成功能。

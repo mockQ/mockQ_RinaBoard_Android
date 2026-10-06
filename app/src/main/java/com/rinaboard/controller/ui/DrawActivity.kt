@@ -80,7 +80,6 @@ import androidx.compose.material3.MaterialTheme
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.material3.OutlinedButton
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
-import androidx.compose.material3.Slider
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.material3.Surface
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -90,7 +89,6 @@ import androidx.compose.runtime.Composable
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.runtime.getValue
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
-import androidx.compose.runtime.mutableIntStateOf
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.runtime.mutableStateOf
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -118,7 +116,6 @@ import androidx.compose.ui.graphics.Color
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.ui.graphics.drawscope.Stroke
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
-import androidx.compose.ui.graphics.toArgb
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.ui.input.pointer.pointerInput
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -134,7 +131,6 @@ import com.rinaboard.controller.data.BoardClient
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import com.rinaboard.controller.data.BoardProtocol
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
-import com.rinaboard.controller.data.BoardSettings
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import com.rinaboard.controller.led.LedMap
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -193,7 +189,7 @@ private fun DrawScreen(onClose: () -> Unit) {
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     val scope = rememberCoroutineScope()
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    val client = remember { BoardClient(BoardSettings(context)) }
+    val client = remember { BoardClient(context) }
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     val ledColors: SnapshotStateList<Color> = remember {
         // 中文注释：下一行构造或发送与 ESP32-S3 通信的控制协议。
@@ -203,17 +199,11 @@ private fun DrawScreen(onClose: () -> Unit) {
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     var mode by remember { mutableStateOf(DrawMode.DRAW) }
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    var red by remember { mutableIntStateOf(255) }
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    var green by remember { mutableIntStateOf(14) }
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    var blue by remember { mutableIntStateOf(93) }
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    var status by remember { mutableStateOf("选择颜色后，在左侧拖动绘制") }
+    var status by remember { mutableStateOf("拖动或点击绘制；发送后灯板使用固定颜色显示") }
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     var sending by remember { mutableStateOf(false) }
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    val brushColor = Color(red, green, blue)
+    val brushColor = Color(180, 0, 100)
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     val litCount = ledColors.count { it != Color.Black }
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
@@ -341,7 +331,7 @@ private fun DrawScreen(onClose: () -> Unit) {
                         // 中文注释：下一行创建或配置一个 Compose 界面组件。
                         Text(
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            text = "彩色绘画",
+                            text = "临时绘画",
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             fontWeight = FontWeight.ExtraBold,
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
@@ -352,75 +342,6 @@ private fun DrawScreen(onClose: () -> Unit) {
                         Text(
                             // 中文注释：下一行构造或发送与 ESP32-S3 通信的控制协议。
                             text = "已点亮 $litCount / ${BoardProtocol.LED_COUNT}",
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            color = RinaTextSecondary,
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            style = MaterialTheme.typography.labelSmall
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        )
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    }
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                }
-
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                Card(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    shape = RoundedCornerShape(16.dp),
-                    // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                ) {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    Column(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    ) {
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Row(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            modifier = Modifier.fillMaxWidth(),
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            verticalAlignment = Alignment.CenterVertically
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        ) {
-                            // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                            Text(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                text = "当前颜色",
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                fontWeight = FontWeight.Bold,
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                style = MaterialTheme.typography.labelLarge,
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                modifier = Modifier.weight(1f)
-                                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                            )
-                            // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                            Box(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                modifier = Modifier
-                                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                    .size(34.dp)
-                                    // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-                                    .background(brushColor, RoundedCornerShape(8.dp))
-                                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                            )
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        }
-                        // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-                        CompactRgbSlider("R", red, Color.Red) { red = it }
-                        // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-                        CompactRgbSlider("G", green, Color.Green) { green = it }
-                        // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-                        CompactRgbSlider("B", blue, Color.Blue) { blue = it }
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Text(
-                            // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-                            text = "#%02X%02X%02X".format(red, green, blue),
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             color = RinaTextSecondary,
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
@@ -582,17 +503,17 @@ private fun DrawScreen(onClose: () -> Unit) {
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             sending = true
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            status = "正在发送 308 颗灯珠 RGB 数据…"
+                            status = "正在发送临时绘画…"
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             scope.launch {
                                 // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-                                val frame = IntArray(BoardProtocol.LED_COUNT) { index -> ledColors[index].toArgb() }
-                                // 中文注释：下一行构造或发送与 ESP32-S3 通信的控制协议。
-                                client.sendColorFrame(frame)
+                                val ids = ledColors.indices.filter { ledColors[it] != Color.Black }
+                                // 临时绘画只发送点亮灯珠编号，不再发送任何 RGB 颜色数据。
+                                client.command(BoardProtocol.draw(ids))
                                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                                     .onSuccess {
                                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                        status = "彩色画面发送成功 · 点亮 $litCount 颗"
+                                        status = "画面发送成功 · $litCount 颗灯珠已按固定颜色显示"
                                         // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                                     }
                                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
@@ -634,7 +555,7 @@ private fun DrawScreen(onClose: () -> Unit) {
                     // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     Text(
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        text = if (sending) "发送中" else "发送彩色画面",
+                        text = if (sending) "发送中" else "发送画面",
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         style = MaterialTheme.typography.labelLarge
                         // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
@@ -677,76 +598,7 @@ private fun DrawScreen(onClose: () -> Unit) {
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
 
-// 中文注释：下一行标记一个 Jetpack Compose 可组合界面函数。
 @Composable
-// 中文注释：下一行定义函数，负责完成对应的业务或界面逻辑。
-private fun CompactRgbSlider(
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-    label: String,
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-    value: Int,
-    // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-    accent: Color,
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-    onValueChange: (Int) -> Unit
-// 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-) {
-    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-    Row(
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-        modifier = Modifier.fillMaxWidth(),
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-        verticalAlignment = Alignment.CenterVertically
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-    ) {
-        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-        Text(
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            text = label,
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            color = accent,
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            fontWeight = FontWeight.Bold,
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            modifier = Modifier.width(18.dp),
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            style = MaterialTheme.typography.labelMedium
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-        )
-        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-        Slider(
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            value = value.toFloat(),
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            onValueChange = { onValueChange(it.toInt().coerceIn(0, 255)) },
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            valueRange = 0f..255f,
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            modifier = Modifier
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                .weight(1f)
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                .height(30.dp)
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-        )
-        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-        Text(
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            text = value.toString(),
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            modifier = Modifier.width(34.dp),
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            style = MaterialTheme.typography.labelSmall
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-        )
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-    }
-// 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-}
-
-// 中文注释：下一行标记一个 Jetpack Compose 可组合界面函数。
-@Composable
-// 中文注释：下一行定义函数，负责完成对应的业务或界面逻辑。
 private fun LedDrawingCanvas(
     // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
     ledColors: List<Color>,

@@ -3,10 +3,22 @@ package com.rinaboard.controller.ui
 
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import android.content.Intent
+import android.net.Uri
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
+import com.rinaboard.controller.data.FaceAssetRepository
+import com.rinaboard.controller.data.FacePattern
+import com.rinaboard.controller.led.LedMap
+import kotlin.math.min
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.foundation.layout.Arrangement
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -86,7 +98,7 @@ import androidx.compose.material.icons.rounded.Settings
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.material.icons.rounded.StopCircle
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
-import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material.icons.rounded.Bluetooth
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.material3.AlertDialog
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -121,6 +133,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.material3.Scaffold
+// 中文注释：亮度控制使用单值 Slider 和设置页 RangeSlider。
+import androidx.compose.material3.Slider
+import androidx.compose.material3.RangeSlider
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.material3.Surface
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -131,6 +146,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.runtime.getValue
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
@@ -166,6 +182,9 @@ import androidx.compose.ui.unit.Dp
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import androidx.compose.ui.unit.dp
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import com.rinaboard.controller.data.BoardSettings
@@ -187,6 +206,7 @@ import com.rinaboard.controller.ui.theme.RinaSuccess
 import com.rinaboard.controller.ui.theme.RinaTextSecondary
 // 中文注释：下一行导入后续代码需要使用的类、函数或扩展。
 import com.rinaboard.controller.ui.theme.RinaWarning
+import kotlin.math.roundToInt
 
 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
 private enum class MainTab(val title: String, val icon: ImageVector) {
@@ -238,11 +258,11 @@ fun RinaBoardApp(vm: AppViewModel) {
                             maxLines = 1,
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             overflow = TextOverflow.Ellipsis
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                         )
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 },
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 actions = {
@@ -254,15 +274,15 @@ fun RinaBoardApp(vm: AppViewModel) {
                             modifier = Modifier.width(52.dp).padding(end = 12.dp),
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             color = RinaPink
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                         )
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             )
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         },
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         bottomBar = {
@@ -280,15 +300,15 @@ fun RinaBoardApp(vm: AppViewModel) {
                         icon = { Icon(item.icon, null) },
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         label = { Text(item.title) }
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     )
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) { padding ->
         // 中文注释：下一行创建或配置一个 Compose 界面组件。
         Surface(Modifier.fillMaxSize().padding(padding), color = MaterialTheme.colorScheme.background) {
@@ -302,11 +322,11 @@ fun RinaBoardApp(vm: AppViewModel) {
                 MainTab.DEVICE -> DeviceScreen(vm)
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 MainTab.SETTINGS -> SettingsScreen(vm)
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -332,11 +352,11 @@ private fun HomeScreen(vm: AppViewModel) {
             horizontal = adaptiveHorizontalPadding(),
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             vertical = 12.dp
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         ),
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         verticalArrangement = Arrangement.spacedBy(14.dp)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
         // 中文注释：下一行处理璃奈板电池电量或充电状态数据。
         item { ConnectionHero(connection, battery, vm) }
@@ -352,7 +372,7 @@ private fun HomeScreen(vm: AppViewModel) {
                     QuickAction("眨眼", Icons.Rounded.Face, Modifier.weight(1f)) { vm.stopAndBlink() }
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     QuickAction("下一个", Icons.Rounded.ChevronRight, Modifier.weight(1f)) { vm.nextFace() }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 Spacer(Modifier.height(10.dp))
@@ -364,67 +384,45 @@ private fun HomeScreen(vm: AppViewModel) {
                     QuickAction("停止", Icons.Rounded.StopCircle, Modifier.weight(1f)) { vm.stopAndBlink() }
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     QuickAction("熄屏", Icons.Rounded.PowerSettingsNew, Modifier.weight(1f)) { vm.screenOff() }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         item {
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            SectionCard(title = "Wi-Fi 连接", subtitle = "连接璃奈板后即可控制") {
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                InfoLine("SSID", BoardSettings.AP_SSID)
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                InfoLine("设备 IP", vm.host.collectAsStateWithLifecycle().value)
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+            SectionCard(title = "蓝牙连接", subtitle = "APP 自动扫描并连接璃奈板") {
+                InfoLine("设备", BoardSettings.BLE_DEVICE_NAME)
+                InfoLine("协议", "BLE GATT")
                 Spacer(Modifier.height(10.dp))
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
                 Row(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     modifier = Modifier.fillMaxWidth(),
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 ) {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     OutlinedButton(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        onClick = {
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        },
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                        onClick = { context.startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS)) },
                         modifier = Modifier.weight(1f)
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     ) {
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Icon(Icons.Rounded.Wifi, null)
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                        Icon(Icons.Rounded.Bluetooth, null)
                         Spacer(Modifier.width(6.dp))
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Text("打开 Wi-Fi")
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        Text("蓝牙设置")
                     }
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     Button(onClick = vm::testConnection, modifier = Modifier.weight(1f)) {
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
                         Icon(Icons.Rounded.Refresh, null)
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         Spacer(Modifier.width(6.dp))
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Text("测试连接")
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        Text("连接 / 重连")
                     }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(onClick = vm::disconnectBluetooth, modifier = Modifier.fillMaxWidth()) {
+                    Text("断开蓝牙")
+                }
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -443,7 +441,7 @@ private fun ConnectionHero(connection: ConnectionState, battery: BatteryState, v
         colors = CardDefaults.cardColors(containerColor = if (online) RinaPinkSoft else Color.White),
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
         // 中文注释：下一行创建或配置一个 Compose 界面组件。
         Column(Modifier.padding(adaptiveHeroPadding())) {
@@ -461,13 +459,13 @@ private fun ConnectionHero(connection: ConnectionState, battery: BatteryState, v
                             ConnectionState.CHECKING -> RinaWarning
                             // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
                             ConnectionState.OFFLINE -> Color(0xFFE05A5A)
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                         },
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         CircleShape
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     )
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 )
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 Spacer(Modifier.width(8.dp))
@@ -481,15 +479,15 @@ private fun ConnectionHero(connection: ConnectionState, battery: BatteryState, v
                         ConnectionState.CHECKING -> "正在检测设备"
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         ConnectionState.OFFLINE -> "璃奈板离线"
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     },
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     fontWeight = FontWeight.Bold,
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     style = MaterialTheme.typography.titleLarge
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 )
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             Spacer(Modifier.height(18.dp))
@@ -515,17 +513,17 @@ private fun ConnectionHero(connection: ConnectionState, battery: BatteryState, v
                             battery.millivolts > 0 -> "电池供电 · ${battery.millivolts} mV"
                             // 中文注释：下一行进入上一条件不成立时的处理分支。
                             else -> "等待电量数据"
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                         },
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         color = RinaTextSecondary
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     )
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
                 // 中文注释：下一行创建或配置一个 Compose 界面组件。
                 IconButton(onClick = { vm.refreshBattery() }) { Icon(Icons.Rounded.Refresh, null) }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             Spacer(Modifier.height(10.dp))
@@ -539,7 +537,7 @@ private fun ConnectionHero(connection: ConnectionState, battery: BatteryState, v
                 color = RinaPink,
                 // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
                 trackColor = Color.White
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             )
             // 中文注释：下一行根据条件决定是否执行对应分支。
             if (battery.source.isNotBlank()) {
@@ -547,11 +545,11 @@ private fun ConnectionHero(connection: ConnectionState, battery: BatteryState, v
                 Spacer(Modifier.height(8.dp))
                 // 中文注释：下一行创建或配置一个 Compose 界面组件。
                 Text("数据来源：${battery.source}", style = MaterialTheme.typography.labelSmall, color = RinaTextSecondary)
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -560,510 +558,347 @@ private fun ConnectionHero(connection: ConnectionState, battery: BatteryState, v
 @Composable
 // 中文注释：下一行定义函数，负责完成对应的业务或界面逻辑。
 private fun FaceScreen(vm: AppViewModel) {
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val faceSettings = remember(context) { BoardSettings(context) }
 
-    // 中文注释：下面原有注释用于说明相邻代码的设计目的。
-    // 输入“表情总数”，下方快捷按钮会自动生成 1..N。
-    // 中文注释：下面原有注释用于说明相邻代码的设计目的。
-    // 默认保持原来的 15 个快捷表情。
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    var faceTotalText by remember { mutableStateOf("15") }
+    // 手机本地 out 文件夹通过 SAF 选择一次后持久授权。
+    // 以后直接用文件管理器/文本编辑器修改 fN.txt，不需要重新打包 APK。
+    var selectedTreeUri by remember { mutableStateOf(faceSettings.faceFolderUri) }
+    var reloadToken by remember { mutableIntStateOf(0) }
 
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
+    val folderPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            // 尽量保存读写权限；部分文档提供器可能只给读取权限，因此做降级处理。
+            val resolver = context.contentResolver
+            runCatching {
+                resolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
+            }.recoverCatching {
+                resolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            selectedTreeUri = uri.toString()
+            faceSettings.faceFolderUri = selectedTreeUri
+            reloadToken++
+        }
+    }
+
+    // 从外部文件管理器改完 fN.txt 返回 APP 时自动重新读取。
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                reloadToken++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val facePatterns = remember(context, selectedTreeUri, reloadToken) {
+        FaceAssetRepository.load(context, selectedTreeUri)
+    }
+    val selectedFolderName = remember(context, selectedTreeUri, reloadToken) {
+        FaceAssetRepository.selectedFolderName(context, selectedTreeUri)
+    }
+
     var seqFace by remember { mutableStateOf("1") }
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     var seqTime by remember { mutableStateOf("500") }
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     val sequence = remember { mutableStateListOf<SequenceStep>() }
 
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    val faceTotal = faceTotalText
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-        .toIntOrNull()
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-        ?.coerceIn(1, 999)
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-        ?: 0
-
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    val faceNumbers = remember(faceTotal) {
-        // 中文注释：下一行根据条件决定是否执行对应分支。
-        if (faceTotal > 0) {
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            (1..faceTotal).toList()
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-        } else {
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            emptyList()
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-        }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-    }
-
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     LazyColumn(
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         modifier = Modifier.fillMaxSize(),
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         contentPadding = PaddingValues(
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             horizontal = adaptiveHorizontalPadding(),
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             vertical = 12.dp
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         ),
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         verticalArrangement = Arrangement.spacedBy(14.dp)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         item {
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             SectionCard(
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                title = "指定表情"
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                subtitle = "输入表情总数，快捷按钮自动生成 1–N"
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                title = "指定表情",
+                subtitle = when {
+                    selectedTreeUri == null -> "选择手机中的 out 文件夹；以后直接修改 fN.txt 即可自动更新"
+                    facePatterns.isEmpty() -> "${selectedFolderName ?: "out"} 中没有读取到 f数字.txt"
+                    else -> "${selectedFolderName ?: "out"} · 已读取 ${facePatterns.size} 个图案"
+                }
             ) {
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                OutlinedTextField(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    value = faceTotalText,
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    onValueChange = { value ->
-                        // 中文注释：下面原有注释用于说明相邻代码的设计目的。
-                        // 最多允许 999 个表情编号。
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        faceTotalText = value
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            .filter(Char::isDigit)
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            .take(3)
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    },
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    label = { Text("表情总数") },
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    placeholder = { Text("例如 53") },
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    keyboardOptions = KeyboardOptions(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        keyboardType = KeyboardType.Number
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    ),
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    singleLine = true
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                )
-
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                Spacer(Modifier.height(12.dp))
-
-                // 中文注释：下一行根据条件决定是否执行对应分支。
-                if (faceTotal > 0) {
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                    Text(
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                        text = "快捷表情 1–$faceTotal",
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                        style = MaterialTheme.typography.labelLarge,
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                        color = RinaTextSecondary
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                    )
-
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    Spacer(Modifier.height(8.dp))
-
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    /*
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * 固定显示 5 列 × 最多 3 行。
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     *
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * 每个按钮高度 44dp：
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * 3 × 44 + 2 × 8 = 148dp
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     *
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * 当表情总数超过 15 时：
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * - 网格内部可纵向滚动
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * - 右侧显示粉色滚动条
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     *
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * 因为整个网格高度固定，所以不会把下面的“上一个 / 下一个”
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     * 或其他页面模块继续往下撑。
-                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                     */
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    FaceQuickGrid(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        faceNumbers = faceNumbers,
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        onFaceClick = vm::showFace
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    )
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                } else {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    Surface(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        modifier = Modifier
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            .fillMaxWidth()
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            .height(64.dp),
-                        // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
-                        color = Color(0xFFF7F8FA),
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        shape = RoundedCornerShape(14.dp)
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { folderPicker.launch(null) },
+                        modifier = Modifier.weight(1f)
                     ) {
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Box(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            modifier = Modifier.fillMaxSize(),
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            contentAlignment = Alignment.Center
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        ) {
-                            // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                            Text(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                text = "请输入有效的表情总数",
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                color = RinaTextSecondary,
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                style = MaterialTheme.typography.bodyMedium
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                            )
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        }
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        Text(if (selectedTreeUri == null) "选择 out 文件夹" else "更换 out 文件夹")
                     }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    IconButton(onClick = { reloadToken++ }) {
+                        Icon(Icons.Rounded.Refresh, contentDescription = "重新读取表情文件")
+                    }
                 }
 
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 Spacer(Modifier.height(10.dp))
 
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                Row(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    modifier = Modifier.fillMaxWidth(),
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                ) {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    OutlinedButton(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        onClick = vm::previousFace,
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        modifier = Modifier.weight(1f)
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                if (facePatterns.isNotEmpty()) {
+                    FacePatternGrid(
+                        patterns = facePatterns,
+                        onFaceClick = vm::showFace
+                    )
+                } else {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(90.dp),
+                        color = Color(0xFFF7F8FA),
+                        shape = RoundedCornerShape(14.dp)
                     ) {
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Text(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            text = "上一个",
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            maxLines = 1,
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            softWrap = false
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        )
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    }
-
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    OutlinedButton(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        onClick = vm::nextFace,
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        modifier = Modifier.weight(1f)
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    ) {
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                        Text(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            text = "下一个",
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            maxLines = 1,
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            softWrap = false
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        )
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-            }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-        }
-
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-        item {
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            SectionCard(
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                "璃奈璃画室"
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                "使用 308 颗 LED 的真实物理坐标，进入后自动横屏"
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            ) {
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                Button(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    onClick = {
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        context.startActivity(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            Intent(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                context,
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                DrawActivity::class.java
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        Box(
+                            modifier = Modifier.fillMaxSize().padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (selectedTreeUri == null) {
+                                    "把 SD 卡的 out 文件夹复制到手机，然后点上方按钮选择它"
+                                } else {
+                                    "未找到 f1.txt、f2.txt……请检查所选目录"
+                                },
+                                color = RinaTextSecondary,
+                                style = MaterialTheme.typography.bodyMedium
                             )
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        )
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    },
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    modifier = Modifier.fillMaxWidth()
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                ) {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    Icon(Icons.Rounded.Brush, null)
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    Spacer(Modifier.width(8.dp))
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    Text("进入画室")
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        }
+                    }
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+
+                Spacer(Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = vm::previousFace,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("上一个", maxLines = 1, softWrap = false)
+                    }
+
+                    OutlinedButton(
+                        onClick = vm::nextFace,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("下一个", maxLines = 1, softWrap = false)
+                    }
+                }
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
 
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         item {
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            SectionCard(
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                "表情序列"
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                "按 face,time(ms); 格式发送 SQ"
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            ) {
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                Row(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    modifier = Modifier.fillMaxWidth(),
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+            SectionCard("璃奈璃画室") {
+                Button(
+                    onClick = {
+                        context.startActivity(Intent(context, DrawActivity::class.java))
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                    Icon(Icons.Rounded.Brush, null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("进入画室")
+                }
+            }
+        }
+
+        item {
+            SectionCard("表情序列") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     OutlinedTextField(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         value = seqFace,
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         onValueChange = {
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            seqFace = it
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                .filter(Char::isDigit)
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                .take(3)
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            seqFace = it.filter(Char::isDigit).take(3)
                         },
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         label = { Text("表情") },
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         modifier = Modifier.weight(1f),
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         singleLine = true,
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        keyboardOptions = KeyboardOptions(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            keyboardType = KeyboardType.Number
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        )
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     OutlinedTextField(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         value = seqTime,
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         onValueChange = {
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            seqTime = it
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                .filter(Char::isDigit)
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                .take(5)
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            seqTime = it.filter(Char::isDigit).take(5)
                         },
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         label = { Text("毫秒") },
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         modifier = Modifier.weight(1f),
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         singleLine = true,
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        keyboardOptions = KeyboardOptions(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            keyboardType = KeyboardType.Number
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        )
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
 
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 Spacer(Modifier.height(8.dp))
 
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
                 Button(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     onClick = {
-                        // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
                         val f = seqFace.toIntOrNull()
-                        // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
                         val t = seqTime.toIntOrNull()
-
-                        // 中文注释：下一行根据条件决定是否执行对应分支。
-                        if (
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            f != null &&
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            f > 0 &&
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            t != null
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        ) {
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            sequence += SequenceStep(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                f,
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                t.coerceAtLeast(100)
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                            )
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        if (f != null && f > 0 && t != null) {
+                            sequence += SequenceStep(f, t.coerceAtLeast(100))
                         }
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     },
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     modifier = Modifier.fillMaxWidth()
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 ) {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     Text("添加序列排练")
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
 
-                // 中文注释：下一行根据条件决定是否执行对应分支。
                 if (sequence.isNotEmpty()) {
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     Spacer(Modifier.height(10.dp))
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     sequence.forEachIndexed { index, step ->
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
                         Row(
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             Modifier.fillMaxWidth(),
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             verticalAlignment = Alignment.CenterVertically
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         ) {
-                            // 中文注释：下一行创建或配置一个 Compose 界面组件。
                             Text(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                                 "${index + 1}. f${step.face} · ${step.durationMs}ms",
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                                 modifier = Modifier.weight(1f)
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                             )
-                            // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                            IconButton(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                onClick = {
-                                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                    sequence.removeAt(index)
-                                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                                }
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            ) {
-                                // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                                Icon(
-                                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                    Icons.Rounded.Delete,
-                                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                    null
-                                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                                )
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            IconButton(onClick = { sequence.removeAt(index) }) {
+                                Icon(Icons.Rounded.Delete, null)
                             }
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                         }
-                        // 中文注释：下一行根据条件决定是否执行对应分支。
-                        if (index < sequence.lastIndex) {
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            HorizontalDivider()
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        }
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        if (index < sequence.lastIndex) HorizontalDivider()
                     }
 
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     Spacer(Modifier.height(8.dp))
-
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     Button(
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        onClick = {
-                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                            vm.playSequence(
-                                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                                sequence.toList()
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                            )
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                        },
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                        onClick = { vm.playSequence(sequence.toList()) },
                         modifier = Modifier.fillMaxWidth()
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     ) {
-                        // 中文注释：下一行创建或配置一个 Compose 界面组件。
                         Text("表演开始")
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
-// 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+}
+
+@Composable
+private fun FacePatternGrid(
+    patterns: List<FacePattern>,
+    onFaceClick: (Int) -> Unit
+) {
+    // 一行 2 个。卡片变大以后可以清楚看到真实 LED 表情图案。
+    val columns = 2
+    val visibleRows = 3
+    val itemHeight = 168.dp
+    val spacing = 10.dp
+    val gridHeight = itemHeight * visibleRows + spacing * (visibleRows - 1)
+    val gridState = rememberLazyGridState()
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(gridHeight)
+    ) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columns),
+            state = gridState,
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(spacing),
+            horizontalArrangement = Arrangement.spacedBy(spacing)
+        ) {
+            items(
+                items = patterns,
+                key = { it.faceNo }
+            ) { pattern ->
+                FacePatternCard(
+                    pattern = pattern,
+                    onClick = { onFaceClick(pattern.faceNo) },
+                    modifier = Modifier.height(itemHeight)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FacePatternCard(
+    pattern: FacePattern,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // 每个卡片只显示实际 LED 图案，不再显示“表情 1 / 表情 2”或灯珠数量文字。
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = RinaPinkSoft),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        FacePatternPreview(
+            litLedIds = pattern.ledIds,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(7.dp)
+        )
+    }
+}
+
+@Composable
+private fun FacePatternPreview(
+    litLedIds: Set<Int>,
+    modifier: Modifier = Modifier
+) {
+    Canvas(
+        modifier = modifier
+            .background(Color(0xFF17171C), RoundedCornerShape(10.dp))
+            .padding(5.dp)
+    ) {
+        if (LedMap.points.isEmpty()) return@Canvas
+
+        val rawCell = 6.70f
+        val mapWidth = LedMap.maxX - LedMap.minX
+        val mapHeight = LedMap.maxY - LedMap.minY
+        val scale = min(
+            size.width / (mapWidth + rawCell),
+            size.height / (mapHeight + rawCell)
+        )
+        val drawWidth = mapWidth * scale
+        val drawHeight = mapHeight * scale
+        val left = (size.width - drawWidth) / 2f
+        val top = (size.height - drawHeight) / 2f
+        val cell = (rawCell * scale).coerceAtLeast(1.4f)
+        val corner = cell * 0.18f
+
+        LedMap.points.forEach { led ->
+            val x = left + (led.x - LedMap.minX) * scale
+            val y = top + (LedMap.maxY - led.y) * scale
+            val lit = led.id in litLedIds
+            val topLeft = Offset(x - cell / 2f, y - cell / 2f)
+
+            drawRoundRect(
+                color = if (lit) RinaPink else Color(0xFF292931),
+                topLeft = topLeft,
+                size = Size(cell, cell),
+                cornerRadius = CornerRadius(corner, corner)
+            )
+
+            if (lit && cell >= 3f) {
+                drawRoundRect(
+                    color = Color(0xFFFFB5D1),
+                    topLeft = topLeft,
+                    size = Size(cell, cell),
+                    cornerRadius = CornerRadius(corner, corner),
+                    style = Stroke(width = 0.7f)
+                )
+            }
+        }
+    }
 }
 
 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
@@ -1102,8 +937,8 @@ private fun FaceQuickGrid(
     val gridHeight =
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         buttonHeight * visibleRows +
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            spacing * (visibleRows - 1)
+                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                spacing * (visibleRows - 1)
 
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     val gridState = rememberLazyGridState()
@@ -1116,7 +951,7 @@ private fun FaceQuickGrid(
             .fillMaxWidth()
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             .height(gridHeight)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         LazyVerticalGrid(
@@ -1134,13 +969,13 @@ private fun FaceQuickGrid(
                     end = if (faceNumbers.size > 15) {
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         10.dp
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     } else {
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         0.dp
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 ),
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             verticalArrangement =
@@ -1152,7 +987,7 @@ private fun FaceQuickGrid(
                 Arrangement.spacedBy(spacing),
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             userScrollEnabled = faceNumbers.size > 15
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         ) {
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             items(
@@ -1160,7 +995,7 @@ private fun FaceQuickGrid(
                 items = faceNumbers,
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 key = { it }
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             ) { n ->
                 // 中文注释：下一行创建或配置一个 Compose 界面组件。
                 FilledTonalButton(
@@ -1168,7 +1003,7 @@ private fun FaceQuickGrid(
                     onClick = {
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         onFaceClick(n)
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     },
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     modifier = Modifier
@@ -1188,9 +1023,9 @@ private fun FaceQuickGrid(
                             containerColor = RinaPinkSoft,
                             // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
                             contentColor = RinaPink
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                         )
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 ) {
                     // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     Text(
@@ -1202,13 +1037,13 @@ private fun FaceQuickGrid(
                         maxLines = 1,
                         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                         softWrap = false
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     )
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
 
         // 中文注释：下一行根据条件决定是否执行对应分支。
@@ -1231,11 +1066,11 @@ private fun FaceQuickGrid(
                     .width(4.dp)
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     .fillMaxHeight()
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             )
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1279,7 +1114,7 @@ private fun FaceGridScrollBar(
     if (totalRows <= visibleRows) {
         // 中文注释：下一行结束当前函数并返回计算结果。
         return
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
@@ -1300,12 +1135,12 @@ private fun FaceGridScrollBar(
     val scrollProgress =
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         (
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            firstVisibleRow.toFloat() /
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                maxFirstRow.toFloat()
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-            )
+                firstVisibleRow.toFloat() /
+                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                        maxFirstRow.toFloat()
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                )
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             .coerceIn(0f, 1f)
 
@@ -1313,12 +1148,12 @@ private fun FaceGridScrollBar(
     val thumbFraction =
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         (
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            visibleRows.toFloat() /
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                totalRows.toFloat()
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-            )
+                visibleRows.toFloat() /
+                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                        totalRows.toFloat()
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                )
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             .coerceIn(0.12f, 1f)
 
@@ -1332,9 +1167,9 @@ private fun FaceGridScrollBar(
                 color = Color(0xFFE5E7EB),
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 shape = RoundedCornerShape(99.dp)
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             )
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
         // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
         val maxThumbOffset =
@@ -1353,9 +1188,9 @@ private fun FaceGridScrollBar(
                 .offset(
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     y = maxThumbOffset *
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        scrollProgress
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                            scrollProgress
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 )
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 .background(
@@ -1363,11 +1198,11 @@ private fun FaceGridScrollBar(
                     color = RinaPink,
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     shape = RoundedCornerShape(99.dp)
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 )
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         )
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1380,6 +1215,9 @@ private fun DeviceScreen(vm: AppViewModel) {
     val suPower by vm.suPowerOn.collectAsStateWithLifecycle()
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     val update by vm.update.collectAsStateWithLifecycle()
+    val brightness by vm.brightness.collectAsStateWithLifecycle()
+    val brightnessMin by vm.brightnessMin.collectAsStateWithLifecycle()
+    val brightnessMax by vm.brightnessMax.collectAsStateWithLifecycle()
     // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
     var confirmUpdate by remember { mutableStateOf(false) }
 
@@ -1401,15 +1239,15 @@ private fun DeviceScreen(vm: AppViewModel) {
                     confirmUpdate = false
                     // 中文注释：下一行处理 SU-03T 上下电、状态查询或固件升级相关逻辑。
                     vm.startSu03tUpdate()
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }) { Text("开始升级", color = RinaPink) }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             },
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             dismissButton = { TextButton(onClick = { confirmUpdate = false }) { Text("取消") } }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         )
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 
     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
@@ -1422,12 +1260,34 @@ private fun DeviceScreen(vm: AppViewModel) {
             horizontal = adaptiveHorizontalPadding(),
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             vertical = 12.dp
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         ),
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         verticalArrangement = Arrangement.spacedBy(14.dp)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
+        item {
+            SectionCard("灯板亮度", "拖动拉条即可实时调整，范围由设置页决定") {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("当前亮度", color = RinaTextSecondary, modifier = Modifier.weight(1f))
+                    Text("$brightness%", fontWeight = FontWeight.Bold, color = RinaPink)
+                }
+                Spacer(Modifier.height(6.dp))
+                Slider(
+                    value = brightness.toFloat().coerceIn(brightnessMin.toFloat(), brightnessMax.toFloat()),
+                    onValueChange = { vm.setBrightness(it.roundToInt()) },
+                    onValueChangeFinished = vm::commitBrightness,
+                    valueRange = brightnessMin.toFloat()..brightnessMax.toFloat(),
+                    steps = (brightnessMax - brightnessMin - 1).coerceAtLeast(0),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(Modifier.fillMaxWidth()) {
+                    Text("最低 $brightnessMin%", style = MaterialTheme.typography.bodySmall, color = RinaTextSecondary)
+                    Spacer(Modifier.weight(1f))
+                    Text("最高 $brightnessMax%", style = MaterialTheme.typography.bodySmall, color = RinaTextSecondary)
+                }
+            }
+        }
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         item {
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
@@ -1440,7 +1300,7 @@ private fun DeviceScreen(vm: AppViewModel) {
                     Spacer(Modifier.width(8.dp))
                     // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     Text(if (suPower) "语音模块已上电" else "语音模块已断电", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 Spacer(Modifier.height(12.dp))
@@ -1450,11 +1310,11 @@ private fun DeviceScreen(vm: AppViewModel) {
                     Button(onClick = { vm.setSu03tPower(true) }, modifier = Modifier.weight(1f)) { Text("上电") }
                     // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     OutlinedButton(onClick = { vm.setSu03tPower(false) }, modifier = Modifier.weight(1f)) { Text("断电") }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         item {
@@ -1476,19 +1336,19 @@ private fun DeviceScreen(vm: AppViewModel) {
                                 "failed" -> "上次更新失败"
                                 // 中文注释：下一行进入上一条件不成立时的处理分支。
                                 else -> "等待更新"
-                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                             },
                             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                             fontWeight = FontWeight.Bold
-                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                         )
                         // 中文注释：下一行创建或配置一个 Compose 界面组件。
                         Text("固件路径：/sdcard/su03t/*_update.bin", color = RinaTextSecondary, style = MaterialTheme.typography.bodySmall)
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                     }
                     // 中文注释：下一行创建或配置一个 Compose 界面组件。
                     IconButton(onClick = vm::refreshUpdateStatus) { Icon(Icons.Rounded.Refresh, null) }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 }
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 Spacer(Modifier.height(10.dp))
@@ -1500,7 +1360,7 @@ private fun DeviceScreen(vm: AppViewModel) {
                     modifier = Modifier.fillMaxWidth().height(8.dp),
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     color = RinaCyan
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
                 )
                 // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 Spacer(Modifier.height(12.dp))
@@ -1514,11 +1374,11 @@ private fun DeviceScreen(vm: AppViewModel) {
                     colors = ButtonDefaults.buttonColors(containerColor = RinaCyan),
                     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                     modifier = Modifier.fillMaxWidth()
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
                 ) { Text("从 SD 卡更新 SU-03T") }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //        item {
@@ -1533,14 +1393,14 @@ private fun DeviceScreen(vm: AppViewModel) {
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //                ProtocolLine("FC / FU / FD", "指定 / 上一个 / 下一个表情")
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                ProtocolLine("PB / PC / PF", "彩色逐灯绘画：开始 / RGB 分块 / 刷新")
+//                ProtocolLine("DR", "临时绘画：发送点亮灯珠编号")
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //                ProtocolLine("SQ", "发送表情播放序列")
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //            }
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //        }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1549,12 +1409,11 @@ private fun DeviceScreen(vm: AppViewModel) {
 @Composable
 // 中文注释：下一行定义函数，负责完成对应的业务或界面逻辑。
 private fun SettingsScreen(vm: AppViewModel) {
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    val context = LocalContext.current
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    val host by vm.host.collectAsStateWithLifecycle()
-    // 中文注释：下一行定义或读取本段逻辑需要使用的变量、常量或状态。
-    var editHost by remember(host) { mutableStateOf(host) }
+    val brightnessMin by vm.brightnessMin.collectAsStateWithLifecycle()
+    val brightnessMax by vm.brightnessMax.collectAsStateWithLifecycle()
+    var brightnessRange by remember(brightnessMin, brightnessMax) {
+        mutableStateOf(brightnessMin.toFloat()..brightnessMax.toFloat())
+    }
 
     // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     LazyColumn(
@@ -1566,91 +1425,65 @@ private fun SettingsScreen(vm: AppViewModel) {
             horizontal = adaptiveHorizontalPadding(),
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             vertical = 12.dp
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         ),
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         verticalArrangement = Arrangement.spacedBy(14.dp)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         item {
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            SectionCard("设备网络") {
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                OutlinedTextField(
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    value = editHost,
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    onValueChange = { editHost = it.filter { c -> c.isDigit() || c == '.' }.take(15) },
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    label = { Text("设备 IP") },
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    modifier = Modifier.fillMaxWidth(),
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    singleLine = true,
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            SectionCard("亮度拉条范围", "设置设备页亮度拉条允许的最低和最高亮度") {
+                Row(Modifier.fillMaxWidth()) {
+                    Text("最低 ${brightnessRange.start.roundToInt()}%", modifier = Modifier.weight(1f), color = RinaTextSecondary)
+                    Text("最高 ${brightnessRange.endInclusive.roundToInt()}%", color = RinaTextSecondary)
+                }
+                Spacer(Modifier.height(8.dp))
+                RangeSlider(
+                    value = brightnessRange,
+                    onValueChange = { range ->
+                        val low = range.start.roundToInt().coerceIn(0, 199)
+                        val high = range.endInclusive.roundToInt().coerceIn(low + 1, 200)
+                        brightnessRange = low.toFloat()..high.toFloat()
+                    },
+                    onValueChangeFinished = {
+                        vm.setBrightnessLimits(
+                            brightnessRange.start.roundToInt(),
+                            brightnessRange.endInclusive.roundToInt()
+                        )
+                    },
+                    valueRange = 0f..200f,
+                    steps = 199,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "设备页只能在这个范围内调节；100% 对应 RGB(180,0,100)，100~200% 会在保持相同比例的前提下使用剩余亮度余量。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = RinaTextSecondary
+                )
                 Spacer(Modifier.height(10.dp))
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    Button(onClick = { vm.setHost(editHost) }, modifier = Modifier.weight(1f)) { Text("保存并测试") }
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    OutlinedButton(onClick = {
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        editHost = BoardSettings.DEFAULT_HOST
-                        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                        vm.resetHost()
-                    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                    }, modifier = Modifier.weight(1f)) { Text("恢复默认") }
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                OutlinedButton(
+                    onClick = {
+                        vm.resetBrightnessLimits()
+                        brightnessRange = BoardSettings.DEFAULT_BRIGHTNESS_MIN.toFloat()..BoardSettings.DEFAULT_BRIGHTNESS_MAX.toFloat()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("恢复默认范围 ${BoardSettings.DEFAULT_BRIGHTNESS_MIN}% ~ ${BoardSettings.DEFAULT_BRIGHTNESS_MAX}%")
                 }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-        }
-        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-        item {
-            // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-            SectionCard("Wi-Fi 参数") {
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                InfoLine("SSID", BoardSettings.AP_SSID)
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                InfoLine("默认 IP", BoardSettings.DEFAULT_HOST)
-// 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                InfoLine("HTTP 端口", "80")
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                InfoLine("电量 UDP", "5001 / 每 5 秒")
-                // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                Spacer(Modifier.height(10.dp))
-                // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                OutlinedButton(onClick = { context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) }, modifier = Modifier.fillMaxWidth()) {
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    Icon(Icons.Rounded.Wifi, null)
-                    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
-                    Spacer(Modifier.width(8.dp))
-                    // 中文注释：下一行创建或配置一个 Compose 界面组件。
-                    Text("打开系统 Wi-Fi 设置")
-                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-                }
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
-            }
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //        item {
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //            SectionCard("界面说明", "粉色主色 + 青色强调，圆角卡片和轻量信息层级") {
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
-//                Text("主界面固定竖屏；“临时绘画”使用独立横屏 Activity。手机端优先通过 UDP 接收电量，同时以 HTTP /BT 作为连接检测和备用读取。", color = RinaTextSecondary)
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //            }
 // 中文注释：下面原有注释用于说明相邻代码的设计目的。
 //        }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1669,7 +1502,7 @@ private fun adaptiveHorizontalPadding(): Dp {
         screenWidthDp <= 420 -> 16.dp
         // 中文注释：下一行进入上一条件不成立时的处理分支。
         else -> 20.dp
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1706,7 +1539,7 @@ private fun SectionCard(title: String, subtitle: String? = null, content: @Compo
         colors = CardDefaults.cardColors(containerColor = Color.White),
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
         // 中文注释：下一行创建或配置一个 Compose 界面组件。
         Column(Modifier.padding(adaptiveCardPadding())) {
@@ -1718,15 +1551,15 @@ private fun SectionCard(title: String, subtitle: String? = null, content: @Compo
                 Spacer(Modifier.height(2.dp))
                 // 中文注释：下一行创建或配置一个 Compose 界面组件。
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = RinaTextSecondary)
-            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+                // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
             }
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             Spacer(Modifier.height(14.dp))
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             content()
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1757,7 +1590,7 @@ private fun QuickAction(
         contentPadding = PaddingValues(horizontal = 5.dp, vertical = 0.dp),
         // 中文注释：下一行处理灯珠颜色、画笔 RGB 或界面颜色。
         colors = ButtonDefaults.filledTonalButtonColors(containerColor = RinaPinkSoft)
-    // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
+        // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
     ) {
         // 中文注释：下一行创建或配置一个 Compose 界面组件。
         Icon(
@@ -1769,7 +1602,7 @@ private fun QuickAction(
             tint = RinaPink,
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             modifier = Modifier.size(19.dp)
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         )
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         Spacer(Modifier.width(4.dp))
@@ -1785,9 +1618,9 @@ private fun QuickAction(
             overflow = TextOverflow.Clip,
             // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
             style = MaterialTheme.typography.labelLarge
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         )
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1802,7 +1635,7 @@ private fun InfoLine(name: String, value: String) {
         Text(name, color = RinaTextSecondary, modifier = Modifier.width(92.dp))
         // 中文注释：下一行创建或配置一个 Compose 界面组件。
         Text(value, fontWeight = FontWeight.SemiBold)
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
@@ -1817,13 +1650,13 @@ private fun ProtocolLine(command: String, meaning: String) {
         Surface(color = RinaPinkSoft, shape = RoundedCornerShape(8.dp)) {
             // 中文注释：下一行创建或配置一个 Compose 界面组件。
             Text(command, color = RinaPink, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
-        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+            // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
         }
         // 中文注释：下一行执行本段程序所需的配置、计算、状态更新或函数调用。
         Spacer(Modifier.width(10.dp))
         // 中文注释：下一行创建或配置一个 Compose 界面组件。
         Text(meaning, color = RinaTextSecondary)
-    // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
+        // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
     }
 // 中文注释：下一行用于结束当前代码块、函数、类型或参数列表。
 }
